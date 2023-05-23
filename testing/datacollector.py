@@ -115,8 +115,7 @@ def getRedGhostPosition(event, threshold:float = 0.7):
                 imagesProcessed += 1
                 red.put((max_loc, bottom_right))
 
-            else:
-                pass
+            
                 #print(f'RED Ghost Not Found. frame number {str(frame_number.get())}')
         detect_out_img.put(haystack_img,False)
 
@@ -146,10 +145,9 @@ def getBlueGhostPosition(event, threshold:float = 0.7):
                 
                 blue.put((max_loc, bottom_right))
 
-            else:
-                pass
+            
                 #print(f'BLUE Ghost Not Found. frame number {str(frame_number.get())}')
-            detect_out_img.put(haystack_img,False)
+            
 
 def getpinkGhostPosition(event, threshold:float = 0.7):
     global frameCount_red, frameCount_blue, frameCount_pink, frameCount_orange, imagesProcessed
@@ -173,10 +171,9 @@ def getpinkGhostPosition(event, threshold:float = 0.7):
                 imagesProcessed += 1
                 pink.put((max_loc, bottom_right))
 
-            else:
-                pass
+            
                 #print(f'PINK Ghost Not Found. frame number {str(frame_number.get())}')
-            detect_out_img.put(haystack_img,False)
+            
 
 def getOrangeGhostPosition(event, threshold:float = 0.7):
     global frameCount_red, frameCount_blue, frameCount_pink, frameCount_orange, imagesProcessed
@@ -199,10 +196,9 @@ def getOrangeGhostPosition(event, threshold:float = 0.7):
                 print(f'ORANGE GHOST \n .  - found frame number {str(frameCount_orange)}, \n  - POS: X: {max_loc[0]}, Y: {max_loc[1]}, to: X: {bottom_right[0]}, Y: {bottom_right[1]} \n')
                 imagesProcessed +=1
                 org.put((max_loc, bottom_right))
-            else:
-                pass
+            
                 #print(f'ORANGE Ghost Not Found. frame number {str(frame_number.get())}')
-            detect_out_img.put(haystack_img,False)
+            
         
             
 def dataWriter(event):
@@ -212,26 +208,24 @@ def dataWriter(event):
             break
         else:
             img = show_buffer.get()
-            if img is not None:
-                p = pink.get()
-                r = red.get()
-                o = org.get()
-                b = blue.get()
-                with open("testing.csv", "a") as f:
-                    imgPath = "images/today" + "-_-" + str(imagesProcessed) + ".jpeg"
-                    print(f"{imgPath},{p},{r},{o},{b}, None, None \n")
-                    f.write(f"{imgPath},{p},{r},{o},{b}, None, None \n")
+        
+            p = pink.get()
+            r = red.get()
+            o = org.get()
+            b = blue.get()
+            with open("testing.csv", "a") as f:
+                imgPath = "images/" + str(today) + "-_-" + str(imagesProcessed) + ".jpeg"
+                print(f"{imgPath},{p},{r},{o},{b}, None, None \n")
+                f.write(f"{imgPath},{p},{r},{o},{b}, None, None \n")
+                
+                
+                cv.rectangle(img, p[0],p[1], (255,20,147), 2, cv.LINE_4) #pink
+                cv.rectangle(img, r[0],r[1], (255,0,0), 2, cv.LINE_4) # red
+                cv.rectangle(img, o[0],o[1], (255,140,0), 2, cv.LINE_4) # orange
+                cv.rectangle(img, b[0],b[1], (0,0,255), 2, cv.LINE_4) # blue
+                cv.imwrite(imgPath, img)
                     
-                    
-                    cv.rectangle(img, p[0],p[1], (255,20,147), 2, cv.LINE_4) #pink
-                    cv.rectangle(img, r[0],r[1], (255,0,0), 2, cv.LINE_4) # red
-                    cv.rectangle(img, o[0],o[1], (255,140,0), 2, cv.LINE_4) # orange
-                    cv.rectangle(img, b[0],b[1], (0,0,255), 2, cv.LINE_4) # blue
-                    cv.imwrite(imgPath, img)
-                    
-            else:
-                print("image is not avaliable\n")
-
+           
 
 
 '''
