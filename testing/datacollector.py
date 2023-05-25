@@ -24,20 +24,20 @@ grayscaleGhosts = [cv.imread("color-0.png", cv.IMREAD_GRAYSCALE),
                    cv.imread("color-2.png", cv.IMREAD_GRAYSCALE),
                    cv.imread("color-3.png", cv.IMREAD_GRAYSCALE)]
 
-colourscaleGhosts = [cv.imread("color-0.png", cv.IMREAD_UNCHANGED),
-                   cv.imread("color-1.png", cv.IMREAD_UNCHANGED),
-                   cv.imread("color-2.png", cv.IMREAD_UNCHANGED),
-                   cv.imread("color-3.png", cv.IMREAD_UNCHANGED)]
+colourscaleGhosts = [cv.cvtColor(cv.imread("color-0.png", cv.IMREAD_COLOR), cv.COLOR_BGR2RGB),
+                   cv.cvtColor(cv.imread("color-1.png", cv.IMREAD_COLOR), cv.COLOR_BGR2RGB),
+                   cv.cvtColor(cv.imread("color-2.png", cv.IMREAD_COLOR), cv.COLOR_BGR2RGB),
+                   cv.cvtColor(cv.imread("color-3.png", cv.IMREAD_COLOR), cv.COLOR_BGR2RGB)]
 '''
 i = 0
 for each in grayscaleGhosts:
     cv.imwrite(f"Grayscale-{str(i)}.png", each)
-    i += 1
+    i += 1'''
 ii = 0
 for each in colourscaleGhosts:
-    cv.imwrite(f"color-{str(ii)}.png", each)
+    cv.imwrite(f"color-testing-{str(ii)}.png", each)
     ii += 1
-    '''
+    
 detect_out_img = queue.Queue()
 detection_buffer_red = queue.Queue()
 detection_buffer_blue = queue.Queue()
@@ -72,7 +72,7 @@ def record(event):
             frameCount_blue += 1
             frameCount_pink += 1
             frameCount_orange += 1
-            haystack_img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+            haystack_img = cv.cvtColor(img, cv.COLOR_RGBA2RGB)
             #haystack_img = img
             detection_buffer_red.put(haystack_img, False)
             detection_buffer_blue.put(haystack_img, False)
@@ -103,16 +103,18 @@ def getRedGhostPosition(event, threshold:float = 0.7):
             haystack_img = detection_buffer_red.get()
             
             
-            result = cv.matchTemplate(haystack_img, grayscaleGhosts[2],method)
+            result = cv.matchTemplate(haystack_img, colourscaleGhosts[2],method)
             min_val, max_val, min_loc, max_loc = cv.minMaxLoc(result)
             if max_val >= threshold:
-                needle_w = grayscaleGhosts[2].shape[1]
-                needle_h = grayscaleGhosts[2].shape[0]
+                needle_w = colourscaleGhosts[2].shape[1]
+                needle_h = colourscaleGhosts[2].shape[0]
                 # Calculate the bottom right corner of the rectangle to draw
                 top_left = max_loc
                 bottom_right = (top_left[0] + needle_w, top_left[1] + needle_h)
                 print(f'RED GHOST \n .  - found frame number {str(frameCount_red)}, \n  - POS: X: {max_loc[0]}, Y: {max_loc[1]}, to: X: {bottom_right[0]}, Y: {bottom_right[1]} \n')
                 imagesProcessed += 1
+                cv.rectangle(haystack_img, max_loc, bottom_right, (0,0,255), 2, cv.LINE_4)
+                cv.imwrite("color-blue-found.jpeg", haystack_img)
                 red.put((max_loc, bottom_right))
 
             
@@ -129,11 +131,11 @@ def getBlueGhostPosition(event, threshold:float = 0.7):
             haystack_img = detection_buffer_blue.get()
             
             
-            result = cv.matchTemplate(haystack_img, grayscaleGhosts[3],method)
+            result = cv.matchTemplate(haystack_img, colourscaleGhosts[3],method)
             min_val, max_val, min_loc, max_loc = cv.minMaxLoc(result)
             if max_val >= threshold:
-                needle_w = grayscaleGhosts[3].shape[1]
-                needle_h = grayscaleGhosts[3].shape[0]
+                needle_w = colourscaleGhosts[3].shape[1]
+                needle_h = colourscaleGhosts[3].shape[0]
                 # Calculate the bottom right corner of the rectangle to draw
                 top_left = max_loc
                 bottom_right = (top_left[0] + needle_w, top_left[1] + needle_h)
@@ -142,10 +144,11 @@ def getBlueGhostPosition(event, threshold:float = 0.7):
                 # Get the size of the needle image. With OpenCV images, you can get the dimensions 
                 # via the shape property. It returns a tuple of the number of rows, columns, and 
                 # channels (if the image is color):
-                
+                cv.rectangle(haystack_img, max_loc, bottom_right, (0,0,255), 2, cv.LINE_4)
+                cv.imwrite("color-blue-found.jpeg", haystack_img)
                 blue.put((max_loc, bottom_right))
 
-            
+            detect_out_img.put(haystack_img,False)
                 #print(f'BLUE Ghost Not Found. frame number {str(frame_number.get())}')
             
 
@@ -159,19 +162,21 @@ def getpinkGhostPosition(event, threshold:float = 0.7):
             haystack_img = detection_buffer_pink.get()
             
             
-            result = cv.matchTemplate(haystack_img, grayscaleGhosts[1],method)
+            result = cv.matchTemplate(haystack_img, colourscaleGhosts[1],method)
             min_val, max_val, min_loc, max_loc = cv.minMaxLoc(result)
             if max_val >= threshold:
-                needle_w = grayscaleGhosts[1].shape[1]
-                needle_h = grayscaleGhosts[1].shape[0]
+                needle_w = colourscaleGhosts[1].shape[1]
+                needle_h = colourscaleGhosts[1].shape[0]
                 # Calculate the bottom right corner of the rectangle to draw
                 top_left = max_loc
                 bottom_right = (top_left[0] + needle_w, top_left[1] + needle_h)
                 print(f'PINK GHOST \n .  - found frame number {str(frameCount_pink)}, \n  - POS: X: {max_loc[0]}, Y: {max_loc[1]}, to: X: {bottom_right[0]}, Y: {bottom_right[1]} \n')
                 imagesProcessed += 1
+                cv.rectangle(haystack_img, max_loc, bottom_right, (0,0,255), 2, cv.LINE_4)
+                cv.imwrite("color-pink-found.jpeg", haystack_img)
                 pink.put((max_loc, bottom_right))
 
-            
+            detect_out_img.put(haystack_img,False)
                 #print(f'PINK Ghost Not Found. frame number {str(frame_number.get())}')
             
 
@@ -185,18 +190,20 @@ def getOrangeGhostPosition(event, threshold:float = 0.7):
             haystack_img = detection_buffer_orange.get()
             
             
-            result = cv.matchTemplate(haystack_img, grayscaleGhosts[0],method)
+            result = cv.matchTemplate(haystack_img, colourscaleGhosts[0],method)
             min_val, max_val, min_loc, max_loc = cv.minMaxLoc(result)
             if max_val >= threshold:
-                needle_w = grayscaleGhosts[0].shape[1]
-                needle_h = grayscaleGhosts[0].shape[0]
+                needle_w = colourscaleGhosts[0].shape[1]
+                needle_h = colourscaleGhosts[0].shape[0]
                 # Calculate the bottom right corner of the rectangle to draw
                 top_left = max_loc
                 bottom_right = (top_left[0] + needle_w, top_left[1] + needle_h)
                 print(f'ORANGE GHOST \n .  - found frame number {str(frameCount_orange)}, \n  - POS: X: {max_loc[0]}, Y: {max_loc[1]}, to: X: {bottom_right[0]}, Y: {bottom_right[1]} \n')
                 imagesProcessed +=1
+                cv.rectangle(haystack_img, max_loc, bottom_right, (0,0,255), 2, cv.LINE_4)
+                cv.imwrite("color-org-found.jpeg", haystack_img)
                 org.put((max_loc, bottom_right))
-            
+            detect_out_img.put(haystack_img,False)
                 #print(f'ORANGE Ghost Not Found. frame number {str(frame_number.get())}')
             
         
