@@ -40,7 +40,7 @@ def detectGhost(event, threshold = 0.5):
     while True and not event.is_set():
         haystack = detectBuffer.get()
         for ghost in ghosts:
-            result = cv.matchTemplate(haystack, ghostImg, cv.TM_CCOEFF_NORMED)
+            result = cv.matchTemplate(haystack, ghost, cv.TM_CCOEFF_NORMED)
             min_val, max_val, min_loc, max_loc = cv.minMaxLoc(result)
             if max_val >= threshold:
                 print(f"ghost found  Max Threshold:{str(round(max_val, 4))}  Max loc {str(max_loc)}" )
