@@ -2,7 +2,7 @@
 import cv2 as cv
 import PIL.ImageGrab as ImageGrab
 import numpy as np
-import csv, queue
+import csv, queue, time
 from thread_custom import Thread
 #variables
 global bbox, currentImg, ghosts
@@ -20,20 +20,20 @@ baseDisplayImg = cv.cvtColor(baseDisplayImg, cv.COLOR_BGR2HSV)
 
 ghosts = [red, blue, pink, orange]
 #record screen
-def record():
-    while True:
+def record(event):
+    while True and not event.is_set():
         img = np.ascontiguousarray(ImageGrab.grab(bbox))
         haystack = cv.cvtColor(img, cv.COLOR_BGR2HSV)
         detectBuffer.put(haystack)
-        
+        '''
+        cv.imshow("HSV", haystack)
         if cv.waitKey(1) & 0xFF == ord('q'):
             detectionThread.event.set()
             ShowThread.event.set()
             recordThread.event.set()
             cv.destroyAllWindows()
             break
-
-
+            '''
 
 #do calculations to find the ghosts and player
 def detectGhost(event, threshold = 0.5):
@@ -44,8 +44,8 @@ def detectGhost(event, threshold = 0.5):
             min_val, max_val, min_loc, max_loc = cv.minMaxLoc(result)
             if max_val >= threshold:
                 print(f"ghost found  Max Threshold:{str(round(max_val, 4))}  Max loc {str(max_loc)}" )
-                cv.rectangle(haystack, min_loc, max_loc, (255,255,255), cv.LINE_4)
-                show_buffer.put(haystack)
+                cv.rectangle(img=haystack, pt1=min_loc, pt2=max_loc, color=(255,255,255), lineType=cv.LINE_4,thickness=3)
+        show_buffer.put(haystack)
 
 #display each image and ask user what way to go
 def Show(event):
@@ -55,20 +55,47 @@ def Show(event):
             img = baseDisplayImg
             print("No Image Avaliable for display using base image")
         cv.imshow("hello", img)
+        if cv.waitKey(1) & 0xFF == ord('q'):
+            print("Wagwan general")
+            detectionThread.event.set()
+            ShowThread.event.set()
+            recordThread.event.set()
+            cv.destroyAllWindows()
 
 #print that to a file
 
 
 if __name__ == "__main__":
+
     detectionThread = Thread(detectGhost)
     detectionThread.args = (detectionThread.event,0.6)
-    detectionThread.start_()
+    
 
     ShowThread = Thread(Show)
-    ShowThread.args = (ShowThread.event,0.6)
-    ShowThread.start_()
+    ShowThread.args = (ShowThread.event,)
+    
 
     recordThread = Thread(record)
-    recordThread.args = (recordThread.event,0.6)
+    recordThread.args = (recordThread.event,)
+
     recordThread.start_()
+    detectionThread.start_()
+    ShowThread.start_()
+
+    try:
+        while True:
+            pass
+                
+    except KeyboardInterrupt:
+        print("Hello There I am about to stop all threads try me bitch")
+        cv.destroyAllWindows()
+        detectionThread.stop()
+        print("THREAD 1")
+        ShowThread.stop()
+        print("THREAD 2")
+        recordThread.stop()
+        print("THREAD 3")
+        print(f"stopping: all threads")
+        
+        
     
