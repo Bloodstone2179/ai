@@ -15,17 +15,17 @@ baseDisplayImg =  np.ascontiguousarray(ImageGrab.grab(bbox))
 baseDisplayImg = cv.cvtColor(baseDisplayImg, cv.COLOR_BGR2RGB)
 
 #bounds
-red_bound_lower = np.asarray([255,0,0])
-red_bound_upper = np.asarray([255,2,2])
+red_bound_lower = np.array([255,0,0])
+red_bound_upper = np.array([255,0,0])
 
-pink_bound_lower = np.asarray([255,184,255])
-pink_bound_upper = np.asarray([255,187,255])
+pink_bound_lower = np.array([255,184,255])
+pink_bound_upper = np.array([255,187,255])
 
 orange_bound_lower = np.array([255,184,81])
 orange_bound_upper = np.array([255,187,84])
 
-blue_bound_lower = np.asarray([0,255,255])
-blue_bound_upper = np.asarray([1,255,255])
+blue_bound_lower = np.array([0,255,255])
+blue_bound_upper = np.array([1,255,255])
 
 #record screen
 def record(event):
@@ -45,7 +45,7 @@ def detectGhost(event, threshold = 0.5):
         haystack = detectBuffer.get()
         
         red_mask = cv.inRange(haystack, red_bound_lower, red_bound_upper)
-        haystack[red_mask>255]=(0,255,0)
+        #haystack[red_mask>255]=(0,255,0)
         red = cv.bitwise_and(haystack, haystack, mask=red_mask)
 
         pink_mask = cv.inRange(haystack, pink_bound_lower, pink_bound_upper)
@@ -69,7 +69,7 @@ def detectGhost(event, threshold = 0.5):
         haystack[blue_mask>200]=(100,100,255)
         blue = cv.bitwise_and(haystack, haystack, mask=blue_mask)
 
-        show_buffer.put(pink)
+        show_buffer.put(result)
 
 #display each image and ask user what way to go
 ##
