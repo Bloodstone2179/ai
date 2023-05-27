@@ -19,15 +19,14 @@ img = None
 sct = mss.mss()
 method = cv.TM_CCOEFF_NORMED
 
-grayscaleGhosts = [cv.imread("color-0.png", cv.IMREAD_GRAYSCALE),
-                   cv.imread("color-1.png", cv.IMREAD_GRAYSCALE),
-                   cv.imread("color-2.png", cv.IMREAD_GRAYSCALE),
-                   cv.imread("color-3.png", cv.IMREAD_GRAYSCALE)]
 
-colourscaleGhosts = [cv.cvtColor(cv.imread("color-0.png", cv.IMREAD_COLOR), cv.COLOR_BGR2RGB),
-                   cv.cvtColor(cv.imread("color-1.png", cv.IMREAD_COLOR), cv.COLOR_BGR2RGB),
-                   cv.cvtColor(cv.imread("color-2.png", cv.IMREAD_COLOR), cv.COLOR_BGR2RGB),
-                   cv.cvtColor(cv.imread("color-3.png", cv.IMREAD_COLOR), cv.COLOR_BGR2RGB)]
+
+red = cv.cvtColor(cv.imread("color-2.png", cv.IMREAD_UNCHANGED), cv.COLOR_BGR2RGB)
+blue = cv.cvtColor(cv.imread("color-3.png", cv.IMREAD_UNCHANGED), cv.COLOR_BGR2RGB)
+pink = cv.cvtColor(cv.imread("color-1.png", cv.IMREAD_UNCHANGED), cv.COLOR_BGR2RGB)
+orange = cv.cvtColor(cv.imread("color-0.png", cv.IMREAD_UNCHANGED), cv.COLOR_BGR2RGB)
+
+colourscaleGhosts = [orange, pink, red, blue]
 '''
 i = 0
 for each in grayscaleGhosts:
@@ -72,13 +71,13 @@ def record(event):
             frameCount_blue += 1
             frameCount_pink += 1
             frameCount_orange += 1
-            haystack_img = cv.cvtColor(img, cv.COLOR_RGBA2RGB)
+            haystack_img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
             #haystack_img = img
             detection_buffer_red.put(haystack_img, False)
             detection_buffer_blue.put(haystack_img, False)
             detection_buffer_pink.put(haystack_img, False)
             detection_buffer_orange.put(haystack_img, False)
-            show_buffer.put(img, False)
+            show_buffer.put(haystack_img, False)
 
 def show(event):
     while True:

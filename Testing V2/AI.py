@@ -23,7 +23,7 @@ ghosts = [red, blue, pink, orange]
 def record(event):
     while True and not event.is_set():
         img = np.ascontiguousarray(ImageGrab.grab(bbox))
-        haystack = cv.cvtColor(img, cv.COLOR_BGR2HSV)
+        haystack = cv.cvtColor(img, cv.COLOR_BGR2RGB)
         detectBuffer.put(haystack)
         '''
         cv.imshow("HSV", haystack)
@@ -43,8 +43,10 @@ def detectGhost(event, threshold = 0.5):
             result = cv.matchTemplate(haystack, ghost, cv.TM_CCOEFF_NORMED)
             min_val, max_val, min_loc, max_loc = cv.minMaxLoc(result)
             if max_val >= threshold:
+                needle_w = ghost.shape[1]
+                needle_h = ghost.shape[0]
                 print(f"ghost found  Max Threshold:{str(round(max_val, 4))}  Max loc {str(max_loc)}" )
-                cv.rectangle(img=haystack, pt1=min_loc, pt2=max_loc, color=(255,255,255), lineType=cv.LINE_4,thickness=3)
+                cv.rectangle(img=haystack, pt1=max_loc, pt2=(needle_w + max_loc[0], needle_h + max_loc[1]), color=(255,45,255), lineType=cv.LINE_4,thickness=3)
         show_buffer.put(haystack)
 
 #display each image and ask user what way to go
