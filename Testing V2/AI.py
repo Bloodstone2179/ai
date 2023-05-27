@@ -78,6 +78,7 @@ def Show(event):
         if img is None:
             img = baseDisplayImg
             print("No Image Avaliable for display using base image")
+            
         cv.imshow("hello", img)
         if cv.waitKey(1) & 0xFF == ord('q'):
             print("Hello There I am about to stop all threads try me bitch")
