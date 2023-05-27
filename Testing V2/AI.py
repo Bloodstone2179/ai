@@ -26,6 +26,7 @@ orange_bound_upper = np.array([255,187,84])
 
 blue_bound_lower = np.asarray([0,255,255])
 blue_bound_upper = np.asarray([1,255,255])
+
 #record screen
 def record(event):
     while True and not event.is_set():
@@ -44,15 +45,15 @@ def detectGhost(event, threshold = 0.5):
         haystack = detectBuffer.get()
         
         red_mask = cv.inRange(haystack, red_bound_lower, red_bound_upper)
-        haystack[red_mask>200]=(0,255,0)
+        haystack[red_mask>255]=(0,255,0)
         red = cv.bitwise_and(haystack, haystack, mask=red_mask)
 
         pink_mask = cv.inRange(haystack, pink_bound_lower, pink_bound_upper)
-        haystack[pink_mask>200]=(255,0,0)
+        haystack[pink_mask>255]=(255,0,0)
         pink = cv.bitwise_and(haystack, haystack, mask=pink_mask)
 
         orange_mask = cv.inRange(haystack, orange_bound_lower, orange_bound_upper)
-        haystack[orange_mask>200]=(255,0,0)
+        haystack[orange_mask>255]=(255,0,0)
         org = cv.bitwise_and(haystack, haystack, mask=orange_mask)
 
         
@@ -68,7 +69,7 @@ def detectGhost(event, threshold = 0.5):
         haystack[blue_mask>200]=(100,100,255)
         blue = cv.bitwise_and(haystack, haystack, mask=blue_mask)
 
-        show_buffer.put(result)
+        show_buffer.put(pink)
 
 #display each image and ask user what way to go
 ##
@@ -78,7 +79,7 @@ def Show(event):
         if img is None:
             img = baseDisplayImg
             print("No Image Avaliable for display using base image")
-            
+
         cv.imshow("hello", img)
         if cv.waitKey(1) & 0xFF == ord('q'):
             print("Hello There I am about to stop all threads try me bitch")
