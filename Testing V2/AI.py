@@ -10,46 +10,68 @@ bbox=(672,261,1267,912)
 currentImg = None
 detectBuffer = queue.Queue()
 show_buffer = queue.Queue()
-red = cv.cvtColor(cv.imread("color-2.png", cv.IMREAD_UNCHANGED), cv.COLOR_BGR2HSV)
-blue = cv.cvtColor(cv.imread("color-3.png", cv.IMREAD_UNCHANGED), cv.COLOR_BGR2HSV)
-pink = cv.cvtColor(cv.imread("color-1.png", cv.IMREAD_UNCHANGED), cv.COLOR_BGR2HSV)
-orange = cv.cvtColor(cv.imread("color-0.png", cv.IMREAD_UNCHANGED), cv.COLOR_BGR2HSV)
 
 baseDisplayImg =  np.ascontiguousarray(ImageGrab.grab(bbox))
-baseDisplayImg = cv.cvtColor(baseDisplayImg, cv.COLOR_BGR2HSV)
+baseDisplayImg = cv.cvtColor(baseDisplayImg, cv.COLOR_BGR2RGB)
 
-ghosts = [red, blue, pink, orange]
+#bounds
+red_bound_lower = np.asarray([255,0,0])
+red_bound_upper = np.asarray([255,2,2])
+
+pink_bound_lower = np.asarray([255,184,255])
+pink_bound_upper = np.asarray([255,187,255])
+
+orange_bound_lower = np.array([255,184,81])
+orange_bound_upper = np.array([255,187,84])
+
+blue_bound_lower = np.asarray([0,255,255])
+blue_bound_upper = np.asarray([1,255,255])
 #record screen
 def record(event):
     while True and not event.is_set():
         img = np.ascontiguousarray(ImageGrab.grab(bbox))
         haystack = cv.cvtColor(img, cv.COLOR_BGR2RGB)
         detectBuffer.put(haystack)
-        '''
-        cv.imshow("HSV", haystack)
-        if cv.waitKey(1) & 0xFF == ord('q'):
-            detectionThread.event.set()
-            ShowThread.event.set()
-            recordThread.event.set()
-            cv.destroyAllWindows()
-            break
-            '''
+        
 
 #do calculations to find the ghosts and player
 def detectGhost(event, threshold = 0.5):
+    
+
+    
+
     while True and not event.is_set():
         haystack = detectBuffer.get()
-        for ghost in ghosts:
-            result = cv.matchTemplate(haystack, ghost, cv.TM_CCOEFF_NORMED)
-            min_val, max_val, min_loc, max_loc = cv.minMaxLoc(result)
-            if max_val >= threshold:
-                needle_w = ghost.shape[1]
-                needle_h = ghost.shape[0]
-                print(f"ghost found  Max Threshold:{str(round(max_val, 4))}  Max loc {str(max_loc)}" )
-                cv.rectangle(img=haystack, pt1=max_loc, pt2=(needle_w + max_loc[0], needle_h + max_loc[1]), color=(255,45,255), lineType=cv.LINE_4,thickness=3)
-        show_buffer.put(haystack)
+        
+        red_mask = cv.inRange(haystack, red_bound_lower, red_bound_upper)
+        haystack[red_mask>200]=(0,255,0)
+        red = cv.bitwise_and(haystack, haystack, mask=red_mask)
+
+        pink_mask = cv.inRange(haystack, pink_bound_lower, pink_bound_upper)
+        haystack[pink_mask>200]=(255,0,0)
+        pink = cv.bitwise_and(haystack, haystack, mask=pink_mask)
+
+        orange_mask = cv.inRange(haystack, orange_bound_lower, orange_bound_upper)
+        haystack[orange_mask>200]=(255,0,0)
+        org = cv.bitwise_and(haystack, haystack, mask=orange_mask)
+
+        
+        low = np.array([0, 42, 0])
+        high = np.array([254, 255, 255])
+        mask = cv.inRange(haystack, low, high)
+        result = cv.bitwise_and(haystack, haystack, mask=mask)
+        result= cv.bitwise_and(haystack, haystack, mask=mask)
+
+        #
+        
+        blue_mask = cv.inRange(haystack, blue_bound_lower, blue_bound_upper)
+        haystack[blue_mask>200]=(100,100,255)
+        blue = cv.bitwise_and(haystack, haystack, mask=blue_mask)
+
+        show_buffer.put(result)
 
 #display each image and ask user what way to go
+##
 def Show(event):
     while True and not event.is_set():
         img = show_buffer.get()
@@ -58,12 +80,16 @@ def Show(event):
             print("No Image Avaliable for display using base image")
         cv.imshow("hello", img)
         if cv.waitKey(1) & 0xFF == ord('q'):
-            print("Wagwan general")
-            detectionThread.event.set()
-            ShowThread.event.set()
-            recordThread.event.set()
+            print("Hello There I am about to stop all threads try me bitch")
             cv.destroyAllWindows()
-
+            detectionThread.stop()
+            print("THREAD 1")
+            ShowThread.stop()
+            print("THREAD 2")
+            recordThread.stop()
+            print("THREAD 3")
+            print(f"stopping: all threads")
+#]
 #print that to a file
 
 
